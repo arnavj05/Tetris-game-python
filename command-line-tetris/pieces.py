@@ -321,6 +321,6 @@ class T_Piece(AbstractPiece):
 
 all_pieces = (Square, LongBar, L_Piece, J_Piece, Z_Piece, S_Piece, T_Piece)
 
-
-def get_random_piece():
+# getNextTetromino() maps to this:
+def get_next_tetromino():
     return random.choice(all_pieces)

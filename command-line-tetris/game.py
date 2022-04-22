@@ -4,24 +4,31 @@ from collections import defaultdict
 
 from pieces import *
 
+# all global variables needed 
+PLAY_AREA_HEIGHT = 30
+PLAY_AREA_WIDTH = 30
+PLAYER_NAME = ""
+GAME_DIFFICULTY = 'E'
 
+# main function -> called by the main function of our language?? Not sure
 def main(stdscr):
 	"""
 	Main function which controls Tetris game logic.
-	:param stdscr: standard curses screen; will be supplied by wrapper function
-	"""
-	setup_main_window(stdscr)
+	param stdscr: standard curses screen; will be supplied by wrapper function
+	"""	
+	# setup_main_window(stdscr)
+	play_window = getBoard(stdscr)
 	height, width = stdscr.getmaxyx()
 
-	play_window = setup_play_window(width)
+	# play_window = setup_play_window(width)
 	stats = setup_statistics(width)
 	next_piece_window = setup_next_piece_window(width)
 	time_interval, score = setup_score(width)
 	setup_help(width)
 
-	block = get_random_piece()()
+	block = get_next_tetromino()()
 	stats.send(block)
-	next_piece = get_random_piece()
+	next_piece = get_next_tetromino()
 
 	draw_next_piece(next_piece_window, next_piece)
 	draw_piece(play_window, block)
@@ -85,7 +92,7 @@ def main(stdscr):
 
 				block = next_piece()
 				stats.send(block)
-				next_piece = get_random_piece()
+				next_piece = get_next_tetromino()
 				draw_next_piece(next_piece_window, next_piece)
 
 				draw_stack(play_window, stack)
@@ -112,9 +119,6 @@ def setup_main_window(window):
 	# no cursor
 	curses.curs_set(0)
 
-
-PLAY_AREA_WIDTH = 10
-PLAY_AREA_HEIGHT = 20
 START_LINE = 4
 
 
@@ -126,6 +130,12 @@ def setup_play_window(console_width):
 	play_window.border()
 
 	return play_window
+
+def getBoard(window):
+	setup_main_window(window)
+	height, width = window.getmaxyx()
+	return setup_play_window(width)
+
 
 
 STATS_AREA_WIDTH = 7
@@ -218,6 +228,10 @@ def setup_score(console_width):
 
 
 INITIAL_TIME_INTERVAL = 1
+if GAME_DIFFICULTY == 'M':
+	INITIAL_TIME_INTERVAL = 2
+elif GAME_DIFFICULTY == 'H':
+	INITIAL_TIME_INTERVAL = 4
 
 
 def score_gen(window):
@@ -254,18 +268,26 @@ def score_gen(window):
 	score = 0
 	lines = 0
 	lvl = 0
+	if GAME_DIFFICULTY == 'M':
+		lvl = 2
+	elif GAME_DIFFICULTY == 'H':
+		lvl = 4
 
 	while True:
 		update_score_window()
 		nbr_of_cleared_lines = yield current_time_interval
 		lines += nbr_of_cleared_lines
 		score += calculate_score(nbr_of_cleared_lines)
+		
 		lvl = lines // 10
 		current_time_interval = update_time_interval()
 
 
 HELP_AREA_HEIGHT = 3
 
+#setSpeed maps to this
+def set_speed(value):
+	pass
 
 def setup_help(console_width):
 	help_window = curses.newwin(
@@ -462,6 +484,10 @@ def check_cleared_lines(stack, affected_lines):
 	return cleared_lines
 
 
+def getName():
+	print("Enter the name of the player")
+	PLAYER_NAME = str(input())
+
 def clear_lines(lines, stack):
 	def count_lines_above(line):
 		cnt = 0
@@ -495,4 +521,13 @@ def clear_lines(lines, stack):
 
 
 if __name__ == '__main__':
+	#Give the height and width as input
+	print("Enter height and width: ", end = "")
+	PLAY_AREA_HEIGHT, PLAY_AREA_WIDTH = map(int, input().strip().split())
+	# get the name of the player 
+	getName()
+	# get the difficulty level for the game:
+	print("Enter the difficulty level for the game.\nE -> Easy\nM -> Medium\nH -> Hard\n")
+	GAME_DIFFICULTY = str(input())
+	print(GAME_DIFFICULTY)
 	curses.wrapper(main)
