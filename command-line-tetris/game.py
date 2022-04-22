@@ -17,7 +17,7 @@ def main(stdscr):
 	param stdscr: standard curses screen; will be supplied by wrapper function
 	"""	
 	# setup_main_window(stdscr)
-	play_window = getBoard(stdscr)
+	play_window = get_board(stdscr)
 	height, width = stdscr.getmaxyx()
 
 	# play_window = setup_play_window(width)
@@ -55,6 +55,8 @@ def main(stdscr):
 			candidate_positions = block.move_left()
 		elif c == curses.KEY_DOWN:
 			advanced_positions = block.advance()
+		elif c == ord(' '):
+			advanced_positions = hard_drop(block)
 		elif c == ord('a'):
 			candidate_positions = block.rotate_clockwise()
 		elif c == ord('d'):
@@ -105,6 +107,36 @@ def main(stdscr):
 """
 ===================Drawing functions===================
 """
+def hard_drop(block):
+	while True:
+		advanced_positions = block.advance()
+		if advanced_positions:
+			if is_inside_stack(advanced_positions, stack):
+				affected_lines = increase_stack(block, stack)
+
+				if 1 in affected_lines:
+					# game over
+					end_animation(play_window)
+					break
+
+				cleared_lines = check_cleared_lines(stack, affected_lines)
+
+				if cleared_lines:
+					clear_line_animation(play_window, cleared_lines)
+					clear_lines(cleared_lines, stack)
+					time_interval = score.send(len(cleared_lines))
+
+				block = next_piece()
+				stats.send(block)
+				next_piece = get_next_tetromino()
+				draw_next_piece(next_piece_window, next_piece)
+
+				draw_stack(play_window, stack)
+				break
+			else:
+				block.accept_move()
+
+			re_draw_piece(play_window, block)
 
 
 def setup_main_window(window):
@@ -131,7 +163,7 @@ def setup_play_window(console_width):
 
 	return play_window
 
-def getBoard(window):
+def get_board(window):
 	setup_main_window(window)
 	height, width = window.getmaxyx()
 	return setup_play_window(width)
@@ -284,6 +316,10 @@ def score_gen(window):
 
 
 HELP_AREA_HEIGHT = 3
+
+def set_game_mode():
+	GAME_DIFFICULTY = str(input())
+	print(GAME_DIFFICULTY)
 
 #setSpeed maps to this
 def set_speed(value):
@@ -484,7 +520,7 @@ def check_cleared_lines(stack, affected_lines):
 	return cleared_lines
 
 
-def getName():
+def get_name():
 	print("Enter the name of the player")
 	PLAYER_NAME = str(input())
 
@@ -525,9 +561,8 @@ if __name__ == '__main__':
 	print("Enter height and width: ", end = "")
 	PLAY_AREA_HEIGHT, PLAY_AREA_WIDTH = map(int, input().strip().split())
 	# get the name of the player 
-	getName()
+	get_name()
 	# get the difficulty level for the game:
 	print("Enter the difficulty level for the game.\nE -> Easy\nM -> Medium\nH -> Hard\n")
-	GAME_DIFFICULTY = str(input())
-	print(GAME_DIFFICULTY)
+	set_game_mode()
 	curses.wrapper(main)
