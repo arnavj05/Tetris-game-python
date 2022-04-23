@@ -10,7 +10,7 @@ PLAY_AREA_WIDTH = 30
 PLAYER_NAME = ""
 GAME_DIFFICULTY = 'E'
 
-# main function -> called by the main function of our language?? Not sure
+# main function
 def main(stdscr):
 	"""
 	Main function which controls Tetris game logic.
