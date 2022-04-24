@@ -5,10 +5,11 @@ from collections import defaultdict
 from pieces import *
 
 # all global variables needed 
-PLAY_AREA_HEIGHT = 30
-PLAY_AREA_WIDTH = 30
+PLAY_AREA_HEIGHT = 20
+PLAY_AREA_WIDTH = 10
 PLAYER_NAME = ""
-GAME_DIFFICULTY = 'E'
+GAME_DIFFICULTY = "H"
+SPEED_TIME_INTERVAL = 1
 
 # main function
 def main(stdscr):
@@ -56,7 +57,7 @@ def main(stdscr):
 		elif c == curses.KEY_DOWN:
 			advanced_positions = block.advance()
 		elif c == ord(' '):
-			advanced_positions = hard_drop(block)
+			hard_drop(block, stack, play_window)
 		elif c == ord('a'):
 			candidate_positions = block.rotate_clockwise()
 		elif c == ord('d'):
@@ -66,7 +67,16 @@ def main(stdscr):
 
 		if time() - timer >= time_interval:
 			# interval is completed, setup next cycle
-			advanced_positions = block.advance()
+			for i in range(SPEED_TIME_INTERVAL):
+				advanced_positions = block.advance()
+				if advanced_positions:
+					if is_inside_stack(advanced_positions, stack):
+						break
+					else:
+						block.accept_move()
+					re_draw_piece(play_window, block)
+			# advanced_positions = block.advance()
+			# set_speed(block, stack, play_window)
 			timer = time()
 
 		if candidate_positions:
@@ -107,36 +117,26 @@ def main(stdscr):
 """
 ===================Drawing functions===================
 """
-def hard_drop(block):
+
+def hard_drop(block, stack, play_window):
 	while True:
 		advanced_positions = block.advance()
 		if advanced_positions:
 			if is_inside_stack(advanced_positions, stack):
-				affected_lines = increase_stack(block, stack)
-
-				if 1 in affected_lines:
-					# game over
-					end_animation(play_window)
-					break
-
-				cleared_lines = check_cleared_lines(stack, affected_lines)
-
-				if cleared_lines:
-					clear_line_animation(play_window, cleared_lines)
-					clear_lines(cleared_lines, stack)
-					time_interval = score.send(len(cleared_lines))
-
-				block = next_piece()
-				stats.send(block)
-				next_piece = get_next_tetromino()
-				draw_next_piece(next_piece_window, next_piece)
-
-				draw_stack(play_window, stack)
 				break
 			else:
 				block.accept_move()
-
 			re_draw_piece(play_window, block)
+
+# def set_speed(block, stack, play_window):
+# 	for i in range(SPEED_TIME_INTERVAL):
+# 		advanced_positions = block.advance()
+# 		if advanced_positions:
+# 			if is_inside_stack(advanced_positions, stack):
+# 				break
+# 			else:
+# 				block.accept_move()
+# 			re_draw_piece(play_window, block)
 
 
 def setup_main_window(window):
@@ -258,13 +258,7 @@ def setup_score(console_width):
 
 	return initial_time_interval, score
 
-
 INITIAL_TIME_INTERVAL = 1
-if GAME_DIFFICULTY == 'M':
-	INITIAL_TIME_INTERVAL = 2
-elif GAME_DIFFICULTY == 'H':
-	INITIAL_TIME_INTERVAL = 4
-
 
 def score_gen(window):
 	"""
@@ -300,17 +294,12 @@ def score_gen(window):
 	score = 0
 	lines = 0
 	lvl = 0
-	if GAME_DIFFICULTY == 'M':
-		lvl = 2
-	elif GAME_DIFFICULTY == 'H':
-		lvl = 4
 
 	while True:
 		update_score_window()
 		nbr_of_cleared_lines = yield current_time_interval
 		lines += nbr_of_cleared_lines
 		score += calculate_score(nbr_of_cleared_lines)
-		
 		lvl = lines // 10
 		current_time_interval = update_time_interval()
 
@@ -318,12 +307,14 @@ def score_gen(window):
 HELP_AREA_HEIGHT = 3
 
 def set_game_mode():
+	global GAME_DIFFICULTY
+	global SPEED_TIME_INTERVAL
 	GAME_DIFFICULTY = str(input())
-	print(GAME_DIFFICULTY)
 
-#setSpeed maps to this
-def set_speed(value):
-	pass
+	if GAME_DIFFICULTY == "M":
+		SPEED_TIME_INTERVAL = 2
+	elif GAME_DIFFICULTY == "H":
+		SPEED_TIME_INTERVAL = 4
 
 def setup_help(console_width):
 	help_window = curses.newwin(
@@ -521,6 +512,7 @@ def check_cleared_lines(stack, affected_lines):
 
 
 def get_name():
+	global PLAYER_NAME
 	print("Enter the name of the player")
 	PLAYER_NAME = str(input())
 
