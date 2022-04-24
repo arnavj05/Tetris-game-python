@@ -10,6 +10,7 @@ PLAY_AREA_WIDTH = 10
 PLAYER_NAME = ""
 GAME_DIFFICULTY = "H"
 SPEED_TIME_INTERVAL = 1
+MODE = "N"
 
 # main function
 def main(stdscr):
@@ -306,7 +307,7 @@ def score_gen(window):
 
 HELP_AREA_HEIGHT = 3
 
-def set_game_mode():
+def set_game_difficulty():
 	global GAME_DIFFICULTY
 	global SPEED_TIME_INTERVAL
 	GAME_DIFFICULTY = str(input())
@@ -315,6 +316,10 @@ def set_game_mode():
 		SPEED_TIME_INTERVAL = 2
 	elif GAME_DIFFICULTY == "H":
 		SPEED_TIME_INTERVAL = 4
+
+def set_game_mode():
+	global MODE
+	MODE = str(input())
 
 def setup_help(console_width):
 	help_window = curses.newwin(
@@ -513,7 +518,6 @@ def check_cleared_lines(stack, affected_lines):
 
 def get_name():
 	global PLAYER_NAME
-	print("Enter the name of the player")
 	PLAYER_NAME = str(input())
 
 def clear_lines(lines, stack):
@@ -552,9 +556,17 @@ if __name__ == '__main__':
 	#Give the height and width as input
 	print("Enter height and width: ", end = "")
 	PLAY_AREA_HEIGHT, PLAY_AREA_WIDTH = map(int, input().strip().split())
+	
 	# get the name of the player 
+	print("Enter your name: ")
 	get_name()
+
+	#get the mode of the game
+	print("Enter the mode which you want to play.\nN -> Normal\nS -> Sprint\n")
+	set_game_mode()
+
 	# get the difficulty level for the game:
 	print("Enter the difficulty level for the game.\nE -> Easy\nM -> Medium\nH -> Hard\n")
-	set_game_mode()
+	set_game_difficulty()
+
 	curses.wrapper(main)
