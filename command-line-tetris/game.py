@@ -5,8 +5,8 @@ from collections import defaultdict
 from pieces import *
 
 # all global variables needed 
-PLAY_AREA_HEIGHT = 30
-PLAY_AREA_WIDTH = 30
+PLAY_AREA_HEIGHT = 20
+PLAY_AREA_WIDTH = 10
 PLAYER_NAME = ""
 GAME_DIFFICULTY = 'E'
 
@@ -60,29 +60,10 @@ def main(stdscr):
 				advanced_positions = block.advance()
 				if advanced_positions:
 					if is_inside_stack(advanced_positions, stack):
-						# affected_lines = increase_stack(block, stack)
-
-						# if 1 in affected_lines:
-						# 	# game over
-						# 	end_animation(play_window)
-						# 	break
-
-						# cleared_lines = check_cleared_lines(stack, affected_lines)
-
-						# if cleared_lines:
-						# 	clear_line_animation(play_window, cleared_lines)
-						# 	clear_lines(cleared_lines, stack)
-						# 	time_interval = score.send(len(cleared_lines))
-
-						# block = next_piece()
-						# stats.send(block)
-						# next_piece = get_next_tetromino()
-						# draw_next_piece(next_piece_window, next_piece)
-
-						# draw_stack(play_window, stack)
 						break
 					else:
 						block.accept_move()
+					re_draw_piece(play_window, block)
 		elif c == ord('a'):
 			candidate_positions = block.rotate_clockwise()
 		elif c == ord('d'):
@@ -133,34 +114,34 @@ def main(stdscr):
 """
 ===================Drawing functions===================
 """
-def hard_drop(block, stack, play_window, score):
-	while True:
-		advanced_positions = block.advance()
-		if advanced_positions:
-			if is_inside_stack(advanced_positions, stack):
-				affected_lines = increase_stack(block, stack)
+# def hard_drop(block, stack, play_window, score):
+# 	while True:
+# 		advanced_positions = block.advance()
+# 		if advanced_positions:
+# 			if is_inside_stack(advanced_positions, stack):
+# 				affected_lines = increase_stack(block, stack)
 
-				if 1 in affected_lines:
-					# game over
-					end_animation(play_window)
-					break
+# 				if 1 in affected_lines:
+# 					# game over
+# 					end_animation(play_window)
+# 					break
 
-				cleared_lines = check_cleared_lines(stack, affected_lines)
+# 				cleared_lines = check_cleared_lines(stack, affected_lines)
 
-				if cleared_lines:
-					clear_line_animation(play_window, cleared_lines)
-					clear_lines(cleared_lines, stack)
-					time_interval = score.send(len(cleared_lines))
+# 				if cleared_lines:
+# 					clear_line_animation(play_window, cleared_lines)
+# 					clear_lines(cleared_lines, stack)
+# 					time_interval = score.send(len(cleared_lines))
 
-				block = next_piece()
-				stats.send(block)
-				next_piece = get_next_tetromino()
-				draw_next_piece(next_piece_window, next_piece)
+# 				block = next_piece()
+# 				stats.send(block)
+# 				next_piece = get_next_tetromino()
+# 				draw_next_piece(next_piece_window, next_piece)
 
-				draw_stack(play_window, stack)
-				break
-			else:
-				block.accept_move()
+# 				draw_stack(play_window, stack)
+# 				break
+# 			else:
+# 				block.accept_move()
 
 		# re_draw_piece(play_window, block)
 
